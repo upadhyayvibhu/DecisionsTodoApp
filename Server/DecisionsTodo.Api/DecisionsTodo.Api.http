@@ -1,0 +1,6 @@
+@DecisionsTodo.Api_HostAddress = http://localhost:5299
+
+GET {{DecisionsTodo.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
