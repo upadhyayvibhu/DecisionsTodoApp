@@ -12,6 +12,8 @@ import type { Todo, TodoFormValues } from '../types/todo';
 import '../components/layout/Layout.css';
 import '../components/todos/Todos.css';
 import './Dashboard.css';
+import { useTheme } from '../hooks/useTheme';
+
 
 type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | null;
 
@@ -27,6 +29,9 @@ export default function Dashboard() {
     updateFilters, resetFilters, dismissError,
     createTodo, updateTodo, toggleTodo, deleteTodo,
   } = useTodos();
+
+  const { theme, toggleTheme } = useTheme();
+
   const [panel, setPanel] = useState<PanelState>(null);
 
   const handleSubmit = async (values: TodoFormValues) => {
@@ -55,7 +60,12 @@ export default function Dashboard() {
       />
 
       <div className="app__main">
-        <Header search={filters.search} onSearchChange={(search) => updateFilters({ search })} />
+        <Header
+          search={filters.search}
+          onSearchChange={(search) => updateFilters({ search })}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
 
         <main className="dashboard">
           <div className="dashboard__top">

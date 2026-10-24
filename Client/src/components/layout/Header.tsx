@@ -1,12 +1,16 @@
 import { Bell, ChevronDown } from 'lucide-react';
+import type { Theme } from '../../hooks/useTheme';
 import SearchInput from '../ui/SearchInput';
+import ThemeToggle from '../ui/ThemeToggle';
 
 interface HeaderProps {
   search: string;
   onSearchChange: (value: string) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
-export default function Header({ search, onSearchChange }: HeaderProps) {
+export default function Header({ search, onSearchChange, theme, onToggleTheme }: HeaderProps) {
   return (
     <header className="header">
       <SearchInput
@@ -15,7 +19,8 @@ export default function Header({ search, onSearchChange }: HeaderProps) {
         onChange={onSearchChange}
         placeholder="Search todos by title or description…"
       />
-      <button className="header__bell" aria-label="Notifications">
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+      <button className="header__icon-btn" aria-label="Notifications">
         <Bell size={20} />
         <span className="header__dot" />
       </button>

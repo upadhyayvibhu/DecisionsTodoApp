@@ -12,3 +12,11 @@
 .badge--high { --badge-bg: rgb(239 68 68 / 0.18); --badge-fg: #f87171; }
 .badge--medium, .badge--pending { --badge-bg: rgb(245 158 11 / 0.18); --badge-fg: #fbbf24; }
 .badge--low, .badge--completed { --badge-bg: rgb(34 197 94 / 0.18); --badge-fg: #4ade80; }
+
+:root[data-theme='light'] .badge--work { --badge-bg: #e0edff; --badge-fg: #1d6fe0; }
+:root[data-theme='light'] .badge--personal { --badge-bg: #efe6ff; --badge-fg: #7c3aed; }
+:root[data-theme='light'] .badge--high { --badge-bg: #ffe3e3; --badge-fg: #dc2626; }
+:root[data-theme='light'] .badge--medium,
+:root[data-theme='light'] .badge--pending { --badge-bg: #fff0d6; --badge-fg: #b45309; }
+:root[data-theme='light'] .badge--low,
+:root[data-theme='light'] .badge--completed { --badge-bg: #dcf6e5; --badge-fg: #15803d; }

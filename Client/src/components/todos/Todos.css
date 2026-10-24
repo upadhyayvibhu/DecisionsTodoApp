@@ -52,3 +52,11 @@
   .filters { grid-template-columns: 1fr 1fr; }
   .filters__search { grid-column: 1 / -1; }
 }
+
+/* Light theme: darker hint text and softer card borders for contrast */
+:root[data-theme='light'] .stat { --stat-border: rgb(15 27 51 / 0.1); }
+:root[data-theme='light'] .stat--blue { --stat-text: #1d6fe0; }
+:root[data-theme='light'] .stat--green { --stat-text: #15803d; }
+:root[data-theme='light'] .stat--amber { --stat-text: #b45309; }
+:root[data-theme='light'] .stat--purple { --stat-text: #7c3aed; }
+:root[data-theme='light'] .row--done { background: rgb(34 197 94 / 0.07); }
