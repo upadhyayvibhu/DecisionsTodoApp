@@ -1,12 +1,13 @@
 import { ChevronDown } from 'lucide-react';
 import SearchInput from '../ui/SearchInput';
 import Button from '../ui/Button';
-import { CATEGORIES, PRIORITIES, STATUSES, type TodoFilters as Filters } from '../../types/todo';
+import { PRIORITIES, STATUSES, type TodoFilters as Filters } from '../../types/todo';
 
 interface TodoFiltersProps {
   filters: Filters;
   onChange: (patch: Partial<Filters>) => void;
   onReset: () => void;
+  categories: string[];
 }
 
 interface FilterSelectProps<T extends string> {
@@ -38,7 +39,7 @@ function FilterSelect<T extends string>({ label, allLabel, value, options, onCha
   );
 }
 
-export default function TodoFilters({ filters, onChange, onReset }: TodoFiltersProps) {
+export default function TodoFilters({ filters, onChange, onReset, categories }: TodoFiltersProps) {
   return (
     <section className="filters" aria-label="Filters">
       <SearchInput
@@ -47,7 +48,7 @@ export default function TodoFilters({ filters, onChange, onReset }: TodoFiltersP
         onChange={(search) => onChange({ search })}
         placeholder="Search todos…"
       />
-      <FilterSelect label="Category" allLabel="All Categories" value={filters.category} options={CATEGORIES} onChange={(category) => onChange({ category })} />
+      <FilterSelect label="Category" allLabel="All Categories" value={filters.category} options={categories} onChange={(category) => onChange({ category })} />
       <FilterSelect label="Priority" allLabel="All Priorities" value={filters.priority} options={PRIORITIES} onChange={(priority) => onChange({ priority })} />
       <FilterSelect label="Status" allLabel="All Status" value={filters.status} options={STATUSES} onChange={(status) => onChange({ status })} />
       <Button variant="secondary" onClick={onReset}>

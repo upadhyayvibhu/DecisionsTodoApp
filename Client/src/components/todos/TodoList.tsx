@@ -64,6 +64,7 @@ export default function TodoList({
         cell: ({ row }) => <Badge value={row.original.isCompleted ? 'Completed' : 'Pending'} />,
       },
       { id: 'createdAt', header: 'Created At', cell: ({ row }) => formatDate(row.original.createdAt) },
+      { id: 'dueDate', header: 'Due Date', cell: ({ row }) => row.original.dueDate ? formatDate(row.original.dueDate) : '—' },
       {
         id: 'actions',
         header: 'Actions',
@@ -87,7 +88,7 @@ export default function TodoList({
       <Table
         data={todos}
         columns={columns}
-        getRowId={(todo) => todo.id}
+        getRowId={(todo) => String(todo.id)}
         isLoading={isLoading}
         emptyMessage="No todos match your filters. Clear them or create a new todo."
         rowClassName={(todo) => (todo.isCompleted ? 'row--done' : '')}
