@@ -7,7 +7,9 @@ import StatsCards from '../components/todos/StatsCards';
 import TodoFilters from '../components/todos/TodoFilters';
 import TodoFormPanel from '../components/todos/TodoFormPanel';
 import TodoList from '../components/todos/TodoList';
+import DeleteTodoDialog from '../components/todos/DeleteTodoDialog';
 import CategoryPanel from '../components/categories/CategoryPanel';
+import SettingsPanel from '../components/settings/SettingsPanel';
 import { useTodos } from '../hooks/useTodos';
 import type { Todo, TodoFormValues } from '../types/todo';
 import '../components/layout/Layout.css';
@@ -16,7 +18,7 @@ import './Dashboard.css';
 import type { Theme } from '../hooks/useTheme';
 
 
-type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | { mode: 'categories' } | null;
+type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | { mode: 'categories' } | { mode: 'settings' } | null;
 
 const getGreeting = (): string => {
   const hour = new Date().getHours();
@@ -26,12 +28,13 @@ const getGreeting = (): string => {
 
 interface DashboardProps {
   fullName: string;
+  email: string;
   theme: Theme;
   onToggleTheme: () => void;
   onSignOut: () => void;
 }
 
-export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }: DashboardProps) {
+export default function Dashboard({ fullName, email, theme, onToggleTheme, onSignOut }: DashboardProps) {
   const {
     filters, todos, totalCount, stats, error, isLoading, categories,
     updateFilters, resetFilters, dismissError,
@@ -39,6 +42,8 @@ export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }:
   } = useTodos();
 
   const [panel, setPanel] = useState<PanelState>(null);
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSubmit = async (values: TodoFormValues) => {
     const ok = panel?.mode === 'edit' ? await updateTodo(panel.todo.id, values) : await createTodo(values);
@@ -47,12 +52,14 @@ export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }:
 
   const handleToggle = useCallback((todo: Todo) => void toggleTodo(todo.id, !todo.isCompleted), [toggleTodo]);
   const handleEdit = useCallback((todo: Todo) => setPanel({ mode: 'edit', todo }), []);
-  const handleDelete = useCallback(
-    (todo: Todo) => {
-      if (window.confirm(`Delete "${todo.title}"? This cannot be undone.`)) void deleteTodo(todo.id);
-    },
-    [deleteTodo],
-  );
+  const handleDelete = useCallback((todo: Todo) => setTodoToDelete(todo), []);
+  const confirmDelete = async () => {
+    if (!todoToDelete) return;
+    setIsDeleting(true);
+    const ok = await deleteTodo(todoToDelete.id);
+    setIsDeleting(false);
+    if (ok) setTodoToDelete(null);
+  };
 
   const openCreate = () => setPanel({ mode: 'create' });
 
@@ -62,8 +69,8 @@ export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }:
         activeView={filters.category}
         counts={{ All: stats?.total ?? 0, Work: stats?.byCategory.Work ?? 0, Personal: stats?.byCategory.Personal ?? 0 }}
         onSelect={(category) => updateFilters({ category })}
-        onNewTodo={openCreate}
-        onManageCategories={() => setPanel({ mode: 'categories' })}
+        onNewCategory={() => setPanel({ mode: 'categories' })}
+        onManageCategories={() => setPanel({ mode: 'settings' })}
       />
 
       <div className="app__main">
@@ -110,8 +117,18 @@ export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }:
         </main>
       </div>
 
+      {panel && <div className="panel-backdrop" aria-hidden="true" onMouseDown={() => setPanel(null)} />}
+
       {panel?.mode === 'categories' ? (
         <CategoryPanel categories={categories} onCreate={createCategory} onRename={renameCategory} onClose={() => setPanel(null)} />
+      ) : panel?.mode === 'settings' ? (
+        <SettingsPanel
+          fullName={fullName}
+          email={email}
+          onManageCategories={() => setPanel({ mode: 'categories' })}
+          onSignOut={onSignOut}
+          onClose={() => setPanel(null)}
+        />
       ) : panel && (
         <TodoFormPanel
           key={panel.mode === 'edit' ? panel.todo.id : 'create'}
@@ -119,6 +136,15 @@ export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }:
           onSubmit={handleSubmit}
           onClose={() => setPanel(null)}
           categories={categories.map((category) => category.name)}
+        />
+      )}
+
+      {todoToDelete && (
+        <DeleteTodoDialog
+          todo={todoToDelete}
+          isDeleting={isDeleting}
+          onConfirm={() => void confirmDelete()}
+          onClose={() => setTodoToDelete(null)}
         />
       )}
     </div>

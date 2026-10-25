@@ -1,4 +1,4 @@
-import { Briefcase, CheckCheck, ListTodo, Plus, Settings, User, type LucideIcon } from 'lucide-react';
+import { Briefcase, CheckCheck, FolderPlus, ListTodo, Settings, User, type LucideIcon } from 'lucide-react';
 import type { Category } from '../../types/todo';
 
 type View = Category | 'All';
@@ -7,7 +7,7 @@ interface SidebarProps {
   activeView: View;
   counts: Record<View, number>;
   onSelect: (view: View) => void;
-  onNewTodo: () => void;
+  onNewCategory: () => void;
   onManageCategories: () => void;
 }
 
@@ -17,7 +17,7 @@ const NAV_ITEMS: { view: View; label: string; icon: LucideIcon }[] = [
   { view: 'Personal', label: 'Personal', icon: User },
 ];
 
-export default function Sidebar({ activeView, counts, onSelect, onNewTodo, onManageCategories }: SidebarProps) {
+export default function Sidebar({ activeView, counts, onSelect, onNewCategory, onManageCategories }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -44,9 +44,9 @@ export default function Sidebar({ activeView, counts, onSelect, onNewTodo, onMan
           </button>
         ))}
         <hr className="nav__divider" />
-        <button className="nav__item" onClick={onNewTodo}>
-          <Plus size={18} />
-          New Todo
+        <button className="nav__item" onClick={onNewCategory}>
+          <FolderPlus size={18} />
+          New Category
         </button>
       </nav>
 
