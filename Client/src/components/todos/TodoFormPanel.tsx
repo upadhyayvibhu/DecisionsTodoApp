@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { ChevronDown, Plus, Save, X } from 'lucide-react';
 import Button from '../ui/Button';
-import { CATEGORIES, PRIORITIES, type Todo, type TodoFormValues } from '../../types/todo';
+import { PRIORITIES, type Todo, type TodoFormValues } from '../../types/todo';
 
 interface TodoFormPanelProps {
   /** When provided the panel edits this todo, otherwise it creates a new one. */
   todo?: Todo;
   onSubmit: (values: TodoFormValues) => Promise<void>;
   onClose: () => void;
+  categories: string[];
 }
 
 const TITLE_MAX = 200;
@@ -19,6 +20,7 @@ const EMPTY_FORM: TodoFormValues = {
   category: 'Work',
   priority: 'Medium',
   isCompleted: false,
+  dueDate: '',
 };
 
 const toFormValues = (todo: Todo): TodoFormValues => ({
@@ -27,9 +29,10 @@ const toFormValues = (todo: Todo): TodoFormValues => ({
   category: todo.category,
   priority: todo.priority,
   isCompleted: todo.isCompleted,
+  dueDate: todo.dueDate ? todo.dueDate.slice(0, 10) : '',
 });
 
-export default function TodoFormPanel({ todo, onSubmit, onClose }: TodoFormPanelProps) {
+export default function TodoFormPanel({ todo, onSubmit, onClose, categories }: TodoFormPanelProps) {
   const isEdit = Boolean(todo);
   const [values, setValues] = useState<TodoFormValues>(() => (todo ? toFormValues(todo) : EMPTY_FORM));
   const [showErrors, setShowErrors] = useState(false);
@@ -112,7 +115,7 @@ export default function TodoFormPanel({ todo, onSubmit, onClose }: TodoFormPanel
             </label>
             <div className="select">
               <select id="category" className="input" value={values.category} onChange={(e) => set('category', e.target.value as TodoFormValues['category'])}>
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <option key={c}>{c}</option>
                 ))}
               </select>
@@ -132,6 +135,17 @@ export default function TodoFormPanel({ todo, onSubmit, onClose }: TodoFormPanel
               <ChevronDown size={16} className="select__chevron" />
             </div>
           </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="dueDate">Due date</label>
+          <input
+            id="dueDate"
+            type="date"
+            className="input"
+            value={values.dueDate}
+            onChange={(e) => set('dueDate', e.target.value)}
+          />
         </div>
 
         <div className="field">

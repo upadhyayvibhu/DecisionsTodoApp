@@ -7,15 +7,16 @@ import StatsCards from '../components/todos/StatsCards';
 import TodoFilters from '../components/todos/TodoFilters';
 import TodoFormPanel from '../components/todos/TodoFormPanel';
 import TodoList from '../components/todos/TodoList';
+import CategoryPanel from '../components/categories/CategoryPanel';
 import { useTodos } from '../hooks/useTodos';
 import type { Todo, TodoFormValues } from '../types/todo';
 import '../components/layout/Layout.css';
 import '../components/todos/Todos.css';
 import './Dashboard.css';
-import { useTheme } from '../hooks/useTheme';
+import type { Theme } from '../hooks/useTheme';
 
 
-type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | null;
+type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | { mode: 'categories' } | null;
 
 const getGreeting = (): string => {
   const hour = new Date().getHours();
@@ -23,14 +24,19 @@ const getGreeting = (): string => {
   return hour < 18 ? 'Good afternoon' : 'Good evening';
 };
 
-export default function Dashboard() {
-  const {
-    filters, todos, totalCount, stats, error, isLoading,
-    updateFilters, resetFilters, dismissError,
-    createTodo, updateTodo, toggleTodo, deleteTodo,
-  } = useTodos();
+interface DashboardProps {
+  fullName: string;
+  theme: Theme;
+  onToggleTheme: () => void;
+  onSignOut: () => void;
+}
 
-  const { theme, toggleTheme } = useTheme();
+export default function Dashboard({ fullName, theme, onToggleTheme, onSignOut }: DashboardProps) {
+  const {
+    filters, todos, totalCount, stats, error, isLoading, categories,
+    updateFilters, resetFilters, dismissError,
+    createTodo, updateTodo, toggleTodo, deleteTodo, createCategory, renameCategory,
+  } = useTodos();
 
   const [panel, setPanel] = useState<PanelState>(null);
 
@@ -39,7 +45,7 @@ export default function Dashboard() {
     if (ok) setPanel(null);
   };
 
-  const handleToggle = useCallback((todo: Todo) => void toggleTodo(todo.id), [toggleTodo]);
+  const handleToggle = useCallback((todo: Todo) => void toggleTodo(todo.id, !todo.isCompleted), [toggleTodo]);
   const handleEdit = useCallback((todo: Todo) => setPanel({ mode: 'edit', todo }), []);
   const handleDelete = useCallback(
     (todo: Todo) => {
@@ -57,6 +63,7 @@ export default function Dashboard() {
         counts={{ All: stats?.total ?? 0, Work: stats?.byCategory.Work ?? 0, Personal: stats?.byCategory.Personal ?? 0 }}
         onSelect={(category) => updateFilters({ category })}
         onNewTodo={openCreate}
+        onManageCategories={() => setPanel({ mode: 'categories' })}
       />
 
       <div className="app__main">
@@ -64,13 +71,15 @@ export default function Dashboard() {
           search={filters.search}
           onSearchChange={(search) => updateFilters({ search })}
           theme={theme}
-          onToggleTheme={toggleTheme}
+          onToggleTheme={onToggleTheme}
+          fullName={fullName}
+          onSignOut={onSignOut}
         />
 
         <main className="dashboard">
           <div className="dashboard__top">
             <div>
-              <h1>{getGreeting()}, Vibhuti! 👋</h1>
+              <h1>{getGreeting()}, {fullName.split(' ')[0]}! 👋</h1>
               <p>Stay organized and make progress, one task at a time.</p>
             </div>
             <Button onClick={openCreate}>
@@ -87,7 +96,7 @@ export default function Dashboard() {
           )}
 
           <StatsCards stats={stats} />
-          <TodoFilters filters={filters} onChange={updateFilters} onReset={resetFilters} />
+          <TodoFilters filters={filters} onChange={updateFilters} onReset={resetFilters} categories={categories.map((category) => category.name)} />
           <TodoList
             todos={todos}
             totalCount={totalCount}
@@ -101,12 +110,15 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {panel && (
+      {panel?.mode === 'categories' ? (
+        <CategoryPanel categories={categories} onCreate={createCategory} onRename={renameCategory} onClose={() => setPanel(null)} />
+      ) : panel && (
         <TodoFormPanel
           key={panel.mode === 'edit' ? panel.todo.id : 'create'}
           todo={panel.mode === 'edit' ? panel.todo : undefined}
           onSubmit={handleSubmit}
           onClose={() => setPanel(null)}
+          categories={categories.map((category) => category.name)}
         />
       )}
     </div>

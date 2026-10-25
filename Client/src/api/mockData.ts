@@ -9,12 +9,14 @@ const todo = (
   isCompleted: boolean,
   day: number,
 ): Todo => ({
-  id: String(id),
+  id,
   title,
   description,
   category,
+  categoryId: category === 'Work' ? 1 : 2,
   priority,
   isCompleted,
+  dueDate: '',
   createdAt: `2026-10-${String(day).padStart(2, '0')}T09:00:00Z`,
 });
 

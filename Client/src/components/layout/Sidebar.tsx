@@ -8,6 +8,7 @@ interface SidebarProps {
   counts: Record<View, number>;
   onSelect: (view: View) => void;
   onNewTodo: () => void;
+  onManageCategories: () => void;
 }
 
 const NAV_ITEMS: { view: View; label: string; icon: LucideIcon }[] = [
@@ -16,7 +17,7 @@ const NAV_ITEMS: { view: View; label: string; icon: LucideIcon }[] = [
   { view: 'Personal', label: 'Personal', icon: User },
 ];
 
-export default function Sidebar({ activeView, counts, onSelect, onNewTodo }: SidebarProps) {
+export default function Sidebar({ activeView, counts, onSelect, onNewTodo, onManageCategories }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -50,7 +51,7 @@ export default function Sidebar({ activeView, counts, onSelect, onNewTodo }: Sid
       </nav>
 
       <div className="sidebar__footer">
-        <button className="nav__item">
+        <button className="nav__item" onClick={onManageCategories}>
           <Settings size={18} />
           Settings
         </button>

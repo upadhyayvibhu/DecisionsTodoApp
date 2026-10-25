@@ -1,20 +1,21 @@
-export const CATEGORIES = ['Work', 'Personal'] as const;
 export const PRIORITIES = ['Low', 'Medium', 'High'] as const;
 export const STATUSES = ['Pending', 'Completed'] as const;
 
-export type Category = (typeof CATEGORIES)[number];
+export type Category = string;
 export type Priority = (typeof PRIORITIES)[number];
 export type Status = (typeof STATUSES)[number];
 
 export interface Todo {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   category: Category;
+  categoryId: number;
   status?: Status;
   priority: Priority;
   isCompleted: boolean;
   createdAt: string; // ISO 8601 timestamp
+  dueDate?: string;
 }
 
 /** Shape of the create / edit form. */
@@ -24,6 +25,7 @@ export interface TodoFormValues {
   category: Category;
   priority: Priority;
   isCompleted: boolean;
+  dueDate: string;
 }
 
 export interface TodoFilters {

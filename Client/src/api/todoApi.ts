@@ -1,112 +1,78 @@
-import {
-  PAGE_SIZE,
-  type PagedResult,
-  type Todo,
-  type TodoFilters,
-  type TodoFormValues,
-  type TodoStats,
-} from '../types/todo';
-import { seedTodos } from './mockData';
+import { getAccessToken, notifySessionExpired } from './authApi';
+import type { Category, PagedResult, Todo, TodoFilters, TodoFormValues, TodoStats } from '../types/todo';
 
-/**
- * Browser-only, in-memory todo data service.
- * Every method is async, keeping data access isolated if persistent storage is
- * added later.
- */
-let store: Todo[] = [...seedTodos];
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5284';
 
-const LATENCY_MS = 250;
-const wait = () => new Promise<void>((resolve) => setTimeout(resolve, LATENCY_MS));
+interface ApiCategory { id: number; name: string; isSystem: boolean }
+interface ApiTodo {
+  id: number; title: string; description?: string; priority: Todo['priority']; categoryId: number;
+  categoryName: string; dueDate?: string; isCompleted: boolean; createdAt: string;
+}
 
-const matches = (todo: Todo, f: TodoFilters): boolean => {
-  const term = f.search.trim().toLowerCase();
-  const matchesSearch =
-    !term ||
-    todo.title.toLowerCase().includes(term) ||
-    (todo.description ?? '').toLowerCase().includes(term);
-
-  return (
-    matchesSearch &&
-    (f.category === 'All' || todo.category === f.category) &&
-    (f.priority === 'All' || todo.priority === f.priority) &&
-    (f.status === 'All' || (f.status === 'Completed') === todo.isCompleted)
-  );
+const errorMessage = async (response: Response): Promise<string> => {
+  try {
+    const body = await response.json() as { detail?: string; title?: string; errors?: Record<string, string[]> };
+    return body.errors && Object.values(body.errors).flat()[0] || body.detail || body.title || 'Request failed.';
+  } catch { return 'Request failed. Please try again.'; }
 };
 
-const findIndex = (id: string): number => {
-  const index = store.findIndex((t) => t.id === id);
-  if (index === -1) throw new Error('Todo not found.');
-  return index;
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAccessToken();
+  if (!token) throw new Error('Your session has expired. Please sign in again.');
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...options, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers } });
+  } catch { throw new Error('Unable to reach the server. Please make sure the API is running.'); }
+  if (response.status === 401) {
+    notifySessionExpired();
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  if (!response.ok) throw new Error(await errorMessage(response));
+  return response.status === 204 ? undefined as T : response.json() as Promise<T>;
+}
+
+const toTodo = (todo: ApiTodo): Todo => ({ id: todo.id, title: todo.title, description: todo.description, category: todo.categoryName, categoryId: todo.categoryId, priority: todo.priority, isCompleted: todo.isCompleted, createdAt: todo.createdAt, dueDate: todo.dueDate });
+
+const categoryIdFor = (category: string, categories: ApiCategory[]) => {
+  const categoryId = categories.find((item) => item.name === category)?.id;
+  if (!categoryId) throw new Error(`The "${category}" category is unavailable.`);
+  return categoryId;
 };
+
+const queryString = (filters: TodoFilters, categories: ApiCategory[], pageSize: number) => {
+  const query = new URLSearchParams({ page: String(filters.page), pageSize: String(pageSize), sortBy: 'created' });
+  if (filters.search.trim()) query.set('search', filters.search.trim());
+  if (filters.category !== 'All') query.set('categoryId', String(categoryIdFor(filters.category, categories)));
+  if (filters.priority !== 'All') query.set('priority', filters.priority);
+  if (filters.status !== 'All') query.set('isCompleted', String(filters.status === 'Completed'));
+  return query.toString();
+};
+
+const getAllTodos = async (): Promise<Todo[]> => {
+  const first = await request<PagedResult<ApiTodo>>('/api/todos?page=1&pageSize=100&sortBy=created');
+  const pages = Math.ceil(first.totalCount / first.pageSize);
+  const remaining = await Promise.all(Array.from({ length: Math.max(0, pages - 1) }, (_, index) => request<PagedResult<ApiTodo>>(`/api/todos?page=${index + 2}&pageSize=100&sortBy=created`)));
+  return [first, ...remaining].flatMap((page) => page.items.map(toTodo));
+};
+
+export type ApiCategoryOption = ApiCategory;
 
 export const todoApi = {
-  async getTodos(filters: TodoFilters): Promise<PagedResult<Todo>> {
-    await wait();
-    const filtered = store
-      .filter((t) => matches(t, filters))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    const start = (filters.page - 1) * PAGE_SIZE;
-
-    return {
-      items: filtered.slice(start, start + PAGE_SIZE),
-      totalCount: filtered.length,
-      page: filters.page,
-      pageSize: PAGE_SIZE,
-    };
+  getCategories: () => request<ApiCategory[]>('/api/categories'),
+  createCategory: (name: string) => request<ApiCategory>('/api/categories', { method: 'POST', body: JSON.stringify({ name: name.trim() }) }),
+  renameCategory: (id: number, name: string) => request<ApiCategory>(`/api/categories/${id}`, { method: 'PUT', body: JSON.stringify({ name: name.trim() }) }),
+  async getTodos(filters: TodoFilters, categories: ApiCategory[]): Promise<PagedResult<Todo>> {
+    const page = await request<PagedResult<ApiTodo>>(`/api/todos?${queryString(filters, categories, 9)}`);
+    return { ...page, items: page.items.map(toTodo) };
   },
-
   async getStats(): Promise<TodoStats> {
-    await wait();
-    const completed = store.filter((t) => t.isCompleted).length;
-    return {
-      total: store.length,
-      completed,
-      pending: store.length - completed,
-      highPriority: store.filter((t) => t.priority === 'High').length,
-      byCategory: {
-        Work: store.filter((t) => t.category === 'Work').length,
-        Personal: store.filter((t) => t.category === 'Personal').length,
-      },
-    };
+    const todos = await getAllTodos();
+    const countFor = (category: Category) => todos.filter((todo) => todo.category === category).length;
+    const completed = todos.filter((todo) => todo.isCompleted).length;
+    return { total: todos.length, completed, pending: todos.length - completed, highPriority: todos.filter((todo) => todo.priority === 'High').length, byCategory: { Work: countFor('Work'), Personal: countFor('Personal') } };
   },
-
-  async create(values: TodoFormValues): Promise<Todo> {
-    await wait();
-    const created: Todo = {
-      ...values,
-      id: crypto.randomUUID(),
-      title: values.title.trim(),
-      description: values.description.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    };
-    store = [created, ...store];
-    return created;
-  },
-
-  async update(id: string, values: TodoFormValues): Promise<Todo> {
-    await wait();
-    const index = findIndex(id);
-    const updated: Todo = {
-      ...store[index],
-      ...values,
-      title: values.title.trim(),
-      description: values.description.trim() || undefined,
-    };
-    store = store.map((t, i) => (i === index ? updated : t));
-    return updated;
-  },
-
-  async toggle(id: string): Promise<Todo> {
-    await wait();
-    const index = findIndex(id);
-    const toggled = { ...store[index], isCompleted: !store[index].isCompleted };
-    store = store.map((t, i) => (i === index ? toggled : t));
-    return toggled;
-  },
-
-  async remove(id: string): Promise<void> {
-    await wait();
-    findIndex(id);
-    store = store.filter((t) => t.id !== id);
-  },
+  create: async (values: TodoFormValues, categories: ApiCategory[]) => request<ApiTodo>('/api/todos', { method: 'POST', body: JSON.stringify({ title: values.title.trim(), description: values.description.trim() || null, priority: values.priority, categoryId: categoryIdFor(values.category, categories), dueDate: values.dueDate || null }) }).then(toTodo),
+  update: async (id: number, values: TodoFormValues, categories: ApiCategory[]) => request<ApiTodo>(`/api/todos/${id}`, { method: 'PUT', body: JSON.stringify({ title: values.title.trim(), description: values.description.trim() || null, priority: values.priority, categoryId: categoryIdFor(values.category, categories), dueDate: values.dueDate || null, isCompleted: values.isCompleted }) }).then(toTodo),
+  toggle: async (id: number, isCompleted: boolean) => request<ApiTodo>(`/api/todos/${id}/status`, { method: 'PATCH', body: JSON.stringify({ isCompleted }) }).then(toTodo),
+  remove: (id: number) => request<void>(`/api/todos/${id}`, { method: 'DELETE' }),
 };

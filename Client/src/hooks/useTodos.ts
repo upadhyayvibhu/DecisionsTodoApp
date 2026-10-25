@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { todoApi } from '../api/todoApi';
+import { todoApi, type ApiCategoryOption } from '../api/todoApi';
 import {
   DEFAULT_FILTERS,
   PAGE_SIZE,
@@ -18,6 +18,7 @@ export function useTodos() {
   const [filters, setFilters] = useState<TodoFilters>(DEFAULT_FILTERS);
   const [result, setResult] = useState<PagedResult<Todo> | null>(null);
   const [stats, setStats] = useState<TodoStats | null>(null);
+  const [categories, setCategories] = useState<ApiCategoryOption[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0); // bump to refetch after a mutation
 
@@ -27,8 +28,19 @@ export function useTodos() {
   useEffect(() => {
     let ignore = false;
 
+    todoApi.getCategories()
+      .then((items) => { if (!ignore) setCategories(items); })
+      .catch((e: unknown) => { if (!ignore) setError(toMessage(e)); });
+
+    return () => { ignore = true; };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+    if (!categories) return () => { ignore = true; };
+
     Promise.all([
-      todoApi.getTodos({ search: debouncedSearch, category, priority, status, page }),
+      todoApi.getTodos({ search: debouncedSearch, category, priority, status, page }, categories),
       todoApi.getStats(),
     ])
       .then(([list, summary]) => {
@@ -49,7 +61,7 @@ export function useTodos() {
     return () => {
       ignore = true;
     };
-  }, [debouncedSearch, category, priority, status, page, version]);
+  }, [debouncedSearch, category, priority, status, page, version, categories]);
 
   /** Changing any filter resets to page 1 unless a page is given explicitly. */
   const updateFilters = useCallback(
@@ -58,6 +70,20 @@ export function useTodos() {
   );
 
   const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), []);
+
+  const refreshCategories = useCallback(async (): Promise<boolean> => {
+    try {
+      const items = await todoApi.getCategories();
+      setCategories(items);
+      setFilters((current) => current.category !== 'All' && !items.some((item) => item.name === current.category)
+        ? { ...current, category: 'All', page: 1 }
+        : current);
+      return true;
+    } catch (e) {
+      setError(toMessage(e));
+      return false;
+    }
+  }, []);
 
   /** Runs a mutation, refetches on success and reports whether it worked. */
   const mutate = useCallback(async (action: () => Promise<unknown>): Promise<boolean> => {
@@ -77,13 +103,24 @@ export function useTodos() {
     totalCount: result?.totalCount ?? 0,
     stats,
     error,
-    isLoading: result === null && error === null,
+    isLoading: categories === null || (result === null && error === null),
+    categories: categories ?? [],
     updateFilters,
     resetFilters,
     dismissError: () => setError(null),
-    createTodo: (values: TodoFormValues) => mutate(() => todoApi.create(values)),
-    updateTodo: (id: string, values: TodoFormValues) => mutate(() => todoApi.update(id, values)),
-    toggleTodo: (id: string) => mutate(() => todoApi.toggle(id)),
-    deleteTodo: (id: string) => mutate(() => todoApi.remove(id)),
+    createTodo: (values: TodoFormValues) => mutate(() => todoApi.create(values, categories ?? [])),
+    updateTodo: (id: number, values: TodoFormValues) => mutate(() => todoApi.update(id, values, categories ?? [])),
+    toggleTodo: (id: number, isCompleted: boolean) => mutate(() => todoApi.toggle(id, isCompleted)),
+    deleteTodo: (id: number) => mutate(() => todoApi.remove(id)),
+    createCategory: async (name: string) => {
+      const ok = await mutate(() => todoApi.createCategory(name));
+      if (ok) await refreshCategories();
+      return ok;
+    },
+    renameCategory: async (id: number, name: string) => {
+      const ok = await mutate(() => todoApi.renameCategory(id, name));
+      if (ok) await refreshCategories();
+      return ok;
+    },
   };
 }
