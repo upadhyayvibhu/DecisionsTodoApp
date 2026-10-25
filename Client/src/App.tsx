@@ -35,7 +35,7 @@ export default function App() {
   });
 
   return session ? (
-    <Dashboard fullName={session.fullName} theme={theme} onToggleTheme={toggleTheme} onSignOut={signOut} />
+    <Dashboard fullName={session.fullName} email={session.email} theme={theme} onToggleTheme={toggleTheme} onSignOut={signOut} />
   ) : (
     <AuthPage theme={theme} onToggleTheme={toggleTheme} onAuthenticated={signIn} />
   );

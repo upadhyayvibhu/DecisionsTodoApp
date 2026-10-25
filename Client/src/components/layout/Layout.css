@@ -1,5 +1,5 @@
 .app { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; }
-.app--panel-open { grid-template-columns: 264px minmax(0, 1fr) 380px; }
+.app--panel-open { grid-template-columns: 264px minmax(0, 1fr); }
 .app__main { min-width: 0; }
 
 /* Sidebar */
@@ -47,9 +47,9 @@
 .header__user { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border: 0; border-radius: 8px; background: none; font-weight: 500; }
 .header__user:hover { background: var(--surface-2); }
 .avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--avatar-bg); color: #fff; font-size: 13px; font-weight: 600; }
+.header__account { position: relative; }.header__user-menu { position: absolute; z-index: 40; top: calc(100% + 8px); right: 0; min-width: 220px; padding: 7px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: 0 14px 35px rgb(15 27 51 / .18); }.header__user-menu-name { padding: 8px 9px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }.header__user-menu-name strong { display: block; margin-top: 2px; color: var(--text); font-size: 13px; }.header__user-menu button { display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 5px; padding: 9px; border: 0; border-radius: 7px; background: none; color: var(--red); text-align: left; }.header__user-menu button:hover { background: rgb(239 68 68 / .1); }
 
 @media (max-width: 1100px) {
   .app, .app--panel-open { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
-  .panel { position: fixed; inset: 0 0 0 auto; z-index: 10; width: min(380px, 100%); }
 }
