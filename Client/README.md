@@ -1,6 +1,19 @@
-# React + TypeScript + Vite
+# Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React, TypeScript, and Vite frontend for the Decisions Todo App. The app runs
+entirely in the browser using seeded, in-memory todo data, so changes reset on
+refresh.
+
+## Development
+
+```powershell
+npm install
+npm run dev
+npm run build
+npm run lint
+```
+
+## Vite configuration
 
 Currently, two official plugins are available:
 

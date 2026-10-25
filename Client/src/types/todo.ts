@@ -14,7 +14,7 @@ export interface Todo {
   status?: Status;
   priority: Priority;
   isCompleted: boolean;
-  createdAt: string; // ISO 8601, same shape the .NET API will return
+  createdAt: string; // ISO 8601 timestamp
 }
 
 /** Shape of the create / edit form. */

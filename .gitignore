@@ -1,17 +1,3 @@
-# Visual Studio temporary files
-.vs/
-
-# .NET local CLI data
-.dotnet-cli/
-
-# Build output
-**/bin/
-**/obj/
-
-# User-specific files
-*.user
-*.suo
-
 # Logs
 *.log
 

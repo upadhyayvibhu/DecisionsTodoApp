@@ -9,9 +9,9 @@ import {
 import { seedTodos } from './mockData';
 
 /**
- * In-memory stand-in for the .NET Web API.
- * Every method is async and has the signature the real HTTP client will have,
- * so swapping to Axios later only changes this file.
+ * Browser-only, in-memory todo data service.
+ * Every method is async, keeping data access isolated if persistent storage is
+ * added later.
  */
 let store: Todo[] = [...seedTodos];
 
