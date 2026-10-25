@@ -5,8 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDataAccess();
+builder.Services.AddErrorHandling();
 
 var app = builder.Build();
+// First in the pipeline so it can catch exceptions from everything after it
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
