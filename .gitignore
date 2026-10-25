@@ -8,3 +8,10 @@ Client/.env
 Client/.env.local
 Client/.env.*.local
 !Client/.env.example
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
