@@ -1,8 +1,14 @@
 ﻿using System.Text.Json.Serialization;
+using TodoApp.Api.Configuration;
 using TodoApp.Api.Extensions;
 using TodoApp.Api.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Loads local secrets from .env during development. Production values come from
+// the hosting environment, which takes priority over this local file.
+EnvironmentFileLoader.Load(builder.Environment.ContentRootPath);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services
     .AddControllers()
