@@ -31,15 +31,9 @@ The first script creates the `TodoAppDb` database, tables, indexes, priorities, 
 
 ### 2. Configure the API
 
-Update the `DefaultConnection` value in [Server/TodoApp.Api/appsettings.json](Server/TodoApp.Api/appsettings.json) if your SQL Server instance is different:
+Copy `Server/TodoApp.Api/.env.example` to `Server/TodoApp.Api/.env`, then set your local SQL Server connection string and JWT key. The `.env` file is ignored by Git.
 
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Server=YOUR_SERVER;Database=TodoAppDb;Trusted_Connection=True;TrustServerCertificate=True"
-}
-```
-
-The development JWT signing key is stored in `appsettings.Development.json`. Replace it with a secure secret outside source control before deploying.
+For production, set the values in `Server/TodoApp.Api/.env.production.example` through your host's environment-variable or secret-management settings. Do not commit or deploy a production `.env` file.
 
 ### 3. Start the API
 
@@ -64,13 +58,15 @@ Open `http://localhost:5173` in a browser. Register a new account, then create a
 
 ## Configuration
 
-The client calls `http://localhost:5284` by default. To use a different API URL, create `Client/.env.local`:
+The client reads its API URL from `Client/.env.local`. To use a different local API URL, update:
 
 ```env
 VITE_API_URL=http://localhost:5284
 ```
 
 If the client runs from another origin, add that origin to `Cors:AllowedOrigins` in the API configuration.
+
+Only `VITE_` variables can be read by the client, and every such value is visible in the browser. Never put a database connection string, password, or JWT key in a client `.env` file.
 
 ## Useful commands
 

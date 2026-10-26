@@ -16,17 +16,11 @@ The server is an ASP.NET Core 10 Web API that provides authentication, category 
 
 ## Configuration
 
-Set the SQL Server connection string in `TodoApp.Api/appsettings.json`:
+For local development, copy `TodoApp.Api/.env.example` to `TodoApp.Api/.env` and fill in the connection string and JWT key. The API loads this local file at startup, and Git ignores it.
 
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Server=YOUR_SERVER;Database=TodoAppDb;Trusted_Connection=True;TrustServerCertificate=True"
-}
-```
+For production, use the environment variables documented in `TodoApp.Api/.env.production.example`. Configure those values in your hosting platform's secret manager or environment settings; do not deploy a production `.env` file.
 
-For local development, the API uses a development JWT key from `TodoApp.Api/appsettings.Development.json`. Use a secure value outside source control for real deployments.
-
-The API accepts requests from `http://localhost:5173` by default. Update `Cors:AllowedOrigins` if your client uses a different URL.
+The API accepts requests from `http://localhost:5173` by default. Set `Cors__AllowedOrigins__0` to the client URL for each environment.
 
 ## Run and test
 

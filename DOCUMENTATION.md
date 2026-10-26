@@ -104,7 +104,9 @@ The client lint command currently reports one known warning from TanStack Table 
 
 ## Security notes
 
-- Never commit a production JWT signing key.
-- Keep production connection strings and secrets in environment variables or a secret manager.
+- The client can read only `VITE_` variables, and those values are public in the browser. Never place secrets in a client `.env` file.
+- Store local server secrets in the ignored `Server/TodoApp.Api/.env` file. Use the committed `.env.example` as a guide.
+- Never commit a production JWT signing key or database password.
+- Keep production connection strings and secrets in hosting environment variables or a secret manager.
 - Use HTTPS in production.
 - Set explicit production CORS origins instead of allowing every origin.
