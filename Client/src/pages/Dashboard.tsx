@@ -1,0 +1,177 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import Header from '../components/layout/Header';
+import Sidebar from '../components/layout/Sidebar';
+import Button from '../components/ui/Button';
+import StatsCards from '../components/todos/StatsCards';
+import TodoFilters from '../components/todos/TodoFilters';
+import TodoFormPanel from '../components/todos/TodoFormPanel';
+import TodoList from '../components/todos/TodoList';
+import DeleteTodoDialog from '../components/todos/DeleteTodoDialog';
+import CategoryPanel from '../components/categories/CategoryPanel';
+import SettingsPanel from '../components/settings/SettingsPanel';
+import { useTodos } from '../hooks/useTodos';
+import type { Todo, TodoFormValues } from '../types/todo';
+import '../components/layout/Layout.css';
+import '../components/todos/Todos.css';
+import './Dashboard.css';
+import type { Theme } from '../hooks/useTheme';
+
+
+type OpenPanel = 'todoForm' | 'categories' | 'settings' | null;
+
+const getGreeting = (): string => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  return hour < 18 ? 'Good afternoon' : 'Good evening';
+};
+
+interface DashboardProps {
+  fullName: string;
+  email: string;
+  theme: Theme;
+  onToggleTheme: () => void;
+  onSignOut: () => void;
+}
+
+export default function Dashboard({ fullName, email, theme, onToggleTheme, onSignOut }: DashboardProps) {
+  const {
+    filters, todos, totalCount, stats, error, isLoading, categories,
+    updateFilters, resetFilters, dismissError,
+    createTodo, updateTodo, toggleTodo, deleteTodo, createCategory, renameCategory,
+  } = useTodos();
+
+  // Only one side panel can be open at a time.
+  const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+  const [todoToEdit, setTodoToEdit] = useState<Todo | null>(null);
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const categoryNames = categories.map((category) => category.name);
+
+  const handleSubmit = async (values: TodoFormValues) => {
+    const wasSaved = todoToEdit
+      ? await updateTodo(todoToEdit.id, values)
+      : await createTodo(values);
+
+    if (wasSaved) closePanel();
+  };
+
+  const closePanel = () => {
+    setOpenPanel(null);
+    setTodoToEdit(null);
+  };
+
+  const openNewTodoForm = () => {
+    setTodoToEdit(null);
+    setOpenPanel('todoForm');
+  };
+
+  const openEditTodoForm = (todo: Todo) => {
+    setTodoToEdit(todo);
+    setOpenPanel('todoForm');
+  };
+
+  const handleToggle = (todo: Todo) => {
+    void toggleTodo(todo.id, !todo.isCompleted);
+  };
+
+  const confirmDelete = async () => {
+    if (!todoToDelete) return;
+
+    setIsDeleting(true);
+    const wasDeleted = await deleteTodo(todoToDelete.id);
+    setIsDeleting(false);
+    if (wasDeleted) setTodoToDelete(null);
+  };
+
+  return (
+    <div className={`app ${openPanel ? 'app--panel-open' : ''}`}>
+      <Sidebar
+        activeView={filters.category}
+        counts={{ All: stats?.total ?? 0, Work: stats?.byCategory.Work ?? 0, Personal: stats?.byCategory.Personal ?? 0 }}
+        onSelect={(category) => updateFilters({ category })}
+        onNewCategory={() => setOpenPanel('categories')}
+        onManageCategories={() => setOpenPanel('settings')}
+      />
+
+      <div className="app__main">
+        <Header
+          search={filters.search}
+          onSearchChange={(search) => updateFilters({ search })}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          fullName={fullName}
+          onSignOut={onSignOut}
+        />
+
+        <main className="dashboard">
+          <div className="dashboard__top">
+            <div>
+              <h1>{getGreeting()}, {fullName.split(' ')[0]}! 👋</h1>
+              <p>Stay organized and make progress, one task at a time.</p>
+            </div>
+            <Button onClick={openNewTodoForm}>
+              <Plus size={18} />
+              New Todo
+            </Button>
+          </div>
+
+          {error && (
+            <div className="alert" role="alert">
+              <span>{error}</span>
+              <button onClick={dismissError}>Dismiss</button>
+            </div>
+          )}
+
+          <StatsCards stats={stats} />
+          <TodoFilters filters={filters} onChange={updateFilters} onReset={resetFilters} categories={categoryNames} />
+          <TodoList
+            todos={todos}
+            totalCount={totalCount}
+            page={filters.page}
+            isLoading={isLoading}
+            onPageChange={(page) => updateFilters({ page })}
+            onToggle={handleToggle}
+            onEdit={openEditTodoForm}
+            onDelete={setTodoToDelete}
+          />
+        </main>
+      </div>
+
+      {openPanel && <div className="panel-backdrop" aria-hidden="true" onMouseDown={closePanel} />}
+
+      {openPanel === 'categories' && (
+        <CategoryPanel categories={categories} onCreate={createCategory} onRename={renameCategory} onClose={closePanel} />
+      )}
+
+      {openPanel === 'settings' && (
+        <SettingsPanel
+          fullName={fullName}
+          email={email}
+          onManageCategories={() => setOpenPanel('categories')}
+          onSignOut={onSignOut}
+          onClose={closePanel}
+        />
+      )}
+
+      {openPanel === 'todoForm' && (
+        <TodoFormPanel
+          key={todoToEdit?.id ?? 'create'}
+          todo={todoToEdit ?? undefined}
+          onSubmit={handleSubmit}
+          onClose={closePanel}
+          categories={categoryNames}
+        />
+      )}
+
+      {todoToDelete && (
+        <DeleteTodoDialog
+          todo={todoToDelete}
+          isDeleting={isDeleting}
+          onConfirm={() => void confirmDelete()}
+          onClose={() => setTodoToDelete(null)}
+        />
+      )}
+    </div>
+  );
+}

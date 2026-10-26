@@ -1,0 +1,38 @@
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; }
+
+.table th {
+  padding: 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.table td { padding: 14px 16px; border-top: 1px solid var(--border); vertical-align: middle; }
+.table tbody tr:hover { background: var(--row-hover); }
+.table__empty { padding: 48px 16px !important; text-align: center; color: var(--muted); }
+
+.skeleton {
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2), var(--border), var(--surface-2));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.pagination { display: flex; gap: 6px; }
+.pagination__btn {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.pagination__btn:hover:not(:disabled) { border-color: var(--primary); }
+.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination__btn--active { background: var(--primary); border-color: var(--primary); color: #fff; }

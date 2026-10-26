@@ -1,19 +1,8 @@
-# Visual Studio temporary files
-.vs/
-
-# .NET local CLI data
-.dotnet-cli/
-
-# Build output
-**/bin/
-**/obj/
-
-# User-specific files
-*.user
-*.suo
-
 # Logs
 *.log
+
+# Local merge backup; retained on disk but never committed.
+.merge-backup-auth-todo/
 
 # Frontend dependencies, builds, and local configuration
 Client/node_modules/
@@ -22,3 +11,17 @@ Client/.env
 Client/.env.local
 Client/.env.*.local
 !Client/.env.example
+!Client/.env.*.example
+
+# Server local secrets and environment-specific configuration
+Server/TodoApp.Api/.env
+Server/TodoApp.Api/.env.*
+!Server/TodoApp.Api/.env.example
+!Server/TodoApp.Api/.env.*.example
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
