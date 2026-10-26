@@ -12,6 +12,7 @@
 }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn--full { width: 100%; }
+.btn__spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: button-spin .7s linear infinite; }
 
 .btn--primary { background: var(--primary); color: #fff; }
 .btn--primary:hover:not(:disabled) { background: var(--primary-hover); }
@@ -23,3 +24,5 @@
 
 .btn--icon { width: 32px; height: 32px; padding: 0; background: none; color: var(--muted); }
 .btn--icon:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+
+@keyframes button-spin { to { transform: rotate(360deg); } }

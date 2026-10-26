@@ -48,7 +48,7 @@ export default function CategoryPanel({ categories, onCreate, onRename, onClose 
 
       <form className="category-create" onSubmit={create}>
         <label htmlFor="new-category">New category</label>
-        <div><input id="new-category" className="input" maxLength={50} value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="e.g. Learning" /><Button type="submit" disabled={isSaving || !newName.trim()}><FolderPlus size={16} /> Add</Button></div>
+        <div><input id="new-category" className="input" maxLength={50} value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="e.g. Learning" /><Button type="submit" disabled={!newName.trim()} isLoading={isSaving} loadingLabel="Adding…"><FolderPlus size={16} /> Add</Button></div>
       </form>
 
       <div className="category-list">
@@ -56,7 +56,7 @@ export default function CategoryPanel({ categories, onCreate, onRename, onClose 
         {categories.map((category) => editing === category.id ? (
           <form className="category-row category-row--edit" key={category.id} onSubmit={rename}>
             <input className="input" maxLength={50} value={name} onChange={(event) => setName(event.target.value)} autoFocus />
-            <Button variant="icon" type="submit" aria-label="Save category" disabled={isSaving}><Save size={16} /></Button>
+            <Button variant="icon" type="submit" aria-label="Save category" isLoading={isSaving}><Save size={16} /></Button>
             <Button variant="icon" type="button" aria-label="Cancel rename" onClick={() => setEditing(null)}><X size={16} /></Button>
           </form>
         ) : (
