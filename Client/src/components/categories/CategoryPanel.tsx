@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { FolderPlus, Pencil, Save, X } from 'lucide-react';
-import type { ApiCategoryOption } from '../../api/todoApi';
+import type { CategoryDto } from '../../api/types';
 import Button from '../ui/Button';
 
 interface CategoryPanelProps {
-  categories: ApiCategoryOption[];
+  categories: CategoryDto[];
   onCreate: (name: string) => Promise<boolean>;
   onRename: (id: number, name: string) => Promise<boolean>;
   onClose: () => void;
@@ -19,11 +19,14 @@ export default function CategoryPanel({ categories, onCreate, onRename, onClose 
   const create = async (event: FormEvent) => {
     event.preventDefault();
     if (!newName.trim()) return;
+
     setIsSaving(true);
-    if (await onCreate(newName)) setNewName('');
+    const wasCreated = await onCreate(newName);
     setIsSaving(false);
+
+    if (wasCreated) onClose();
   };
-  const startRename = (category: ApiCategoryOption) => {
+  const startRename = (category: CategoryDto) => {
     setEditing(category.id);
     setName(category.name);
   };

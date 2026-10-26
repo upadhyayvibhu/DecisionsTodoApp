@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
@@ -18,7 +18,7 @@ import './Dashboard.css';
 import type { Theme } from '../hooks/useTheme';
 
 
-type PanelState = { mode: 'create' } | { mode: 'edit'; todo: Todo } | { mode: 'categories' } | { mode: 'settings' } | null;
+type OpenPanel = 'todoForm' | 'categories' | 'settings' | null;
 
 const getGreeting = (): string => {
   const hour = new Date().getHours();
@@ -41,36 +41,57 @@ export default function Dashboard({ fullName, email, theme, onToggleTheme, onSig
     createTodo, updateTodo, toggleTodo, deleteTodo, createCategory, renameCategory,
   } = useTodos();
 
-  const [panel, setPanel] = useState<PanelState>(null);
+  // Only one side panel can be open at a time.
+  const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+  const [todoToEdit, setTodoToEdit] = useState<Todo | null>(null);
   const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const categoryNames = categories.map((category) => category.name);
 
   const handleSubmit = async (values: TodoFormValues) => {
-    const ok = panel?.mode === 'edit' ? await updateTodo(panel.todo.id, values) : await createTodo(values);
-    if (ok) setPanel(null);
+    const wasSaved = todoToEdit
+      ? await updateTodo(todoToEdit.id, values)
+      : await createTodo(values);
+
+    if (wasSaved) closePanel();
   };
 
-  const handleToggle = useCallback((todo: Todo) => void toggleTodo(todo.id, !todo.isCompleted), [toggleTodo]);
-  const handleEdit = useCallback((todo: Todo) => setPanel({ mode: 'edit', todo }), []);
-  const handleDelete = useCallback((todo: Todo) => setTodoToDelete(todo), []);
+  const closePanel = () => {
+    setOpenPanel(null);
+    setTodoToEdit(null);
+  };
+
+  const openNewTodoForm = () => {
+    setTodoToEdit(null);
+    setOpenPanel('todoForm');
+  };
+
+  const openEditTodoForm = (todo: Todo) => {
+    setTodoToEdit(todo);
+    setOpenPanel('todoForm');
+  };
+
+  const handleToggle = (todo: Todo) => {
+    void toggleTodo(todo.id, !todo.isCompleted);
+  };
+
   const confirmDelete = async () => {
     if (!todoToDelete) return;
+
     setIsDeleting(true);
-    const ok = await deleteTodo(todoToDelete.id);
+    const wasDeleted = await deleteTodo(todoToDelete.id);
     setIsDeleting(false);
-    if (ok) setTodoToDelete(null);
+    if (wasDeleted) setTodoToDelete(null);
   };
 
-  const openCreate = () => setPanel({ mode: 'create' });
-
   return (
-    <div className={`app ${panel ? 'app--panel-open' : ''}`}>
+    <div className={`app ${openPanel ? 'app--panel-open' : ''}`}>
       <Sidebar
         activeView={filters.category}
         counts={{ All: stats?.total ?? 0, Work: stats?.byCategory.Work ?? 0, Personal: stats?.byCategory.Personal ?? 0 }}
         onSelect={(category) => updateFilters({ category })}
-        onNewCategory={() => setPanel({ mode: 'categories' })}
-        onManageCategories={() => setPanel({ mode: 'settings' })}
+        onNewCategory={() => setOpenPanel('categories')}
+        onManageCategories={() => setOpenPanel('settings')}
       />
 
       <div className="app__main">
@@ -89,7 +110,7 @@ export default function Dashboard({ fullName, email, theme, onToggleTheme, onSig
               <h1>{getGreeting()}, {fullName.split(' ')[0]}! 👋</h1>
               <p>Stay organized and make progress, one task at a time.</p>
             </div>
-            <Button onClick={openCreate}>
+            <Button onClick={openNewTodoForm}>
               <Plus size={18} />
               New Todo
             </Button>
@@ -103,7 +124,7 @@ export default function Dashboard({ fullName, email, theme, onToggleTheme, onSig
           )}
 
           <StatsCards stats={stats} />
-          <TodoFilters filters={filters} onChange={updateFilters} onReset={resetFilters} categories={categories.map((category) => category.name)} />
+          <TodoFilters filters={filters} onChange={updateFilters} onReset={resetFilters} categories={categoryNames} />
           <TodoList
             todos={todos}
             totalCount={totalCount}
@@ -111,31 +132,35 @@ export default function Dashboard({ fullName, email, theme, onToggleTheme, onSig
             isLoading={isLoading}
             onPageChange={(page) => updateFilters({ page })}
             onToggle={handleToggle}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={openEditTodoForm}
+            onDelete={setTodoToDelete}
           />
         </main>
       </div>
 
-      {panel && <div className="panel-backdrop" aria-hidden="true" onMouseDown={() => setPanel(null)} />}
+      {openPanel && <div className="panel-backdrop" aria-hidden="true" onMouseDown={closePanel} />}
 
-      {panel?.mode === 'categories' ? (
-        <CategoryPanel categories={categories} onCreate={createCategory} onRename={renameCategory} onClose={() => setPanel(null)} />
-      ) : panel?.mode === 'settings' ? (
+      {openPanel === 'categories' && (
+        <CategoryPanel categories={categories} onCreate={createCategory} onRename={renameCategory} onClose={closePanel} />
+      )}
+
+      {openPanel === 'settings' && (
         <SettingsPanel
           fullName={fullName}
           email={email}
-          onManageCategories={() => setPanel({ mode: 'categories' })}
+          onManageCategories={() => setOpenPanel('categories')}
           onSignOut={onSignOut}
-          onClose={() => setPanel(null)}
+          onClose={closePanel}
         />
-      ) : panel && (
+      )}
+
+      {openPanel === 'todoForm' && (
         <TodoFormPanel
-          key={panel.mode === 'edit' ? panel.todo.id : 'create'}
-          todo={panel.mode === 'edit' ? panel.todo : undefined}
+          key={todoToEdit?.id ?? 'create'}
+          todo={todoToEdit ?? undefined}
           onSubmit={handleSubmit}
-          onClose={() => setPanel(null)}
-          categories={categories.map((category) => category.name)}
+          onClose={closePanel}
+          categories={categoryNames}
         />
       )}
 

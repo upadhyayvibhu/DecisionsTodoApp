@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Sparkles, UserRound } from 'lucide-react';
-import { authApi, type AuthResponse } from '../../api/authApi';
+import { authService } from '../../api/authService';
+import type { AuthSession } from '../../api/types';
 import type { Theme } from '../../hooks/useTheme';
 import ThemeToggle from '../ui/ThemeToggle';
 import './AuthPage.css';
@@ -10,7 +11,7 @@ type Mode = 'login' | 'register';
 interface AuthPageProps {
   theme: Theme;
   onToggleTheme: () => void;
-  onAuthenticated: (session: AuthResponse) => void;
+  onAuthenticated: (session: AuthSession) => void;
 }
 
 const initialFields = { fullName: '', email: '', password: '' };
@@ -44,8 +45,8 @@ export default function AuthPage({ theme, onToggleTheme, onAuthenticated }: Auth
     setIsSubmitting(true);
     try {
       const session = isRegister
-        ? await authApi.register({ ...fields, fullName: fields.fullName.trim(), email: fields.email.trim() })
-        : await authApi.login({ email: fields.email.trim(), password: fields.password });
+        ? await authService.register({ ...fields, fullName: fields.fullName.trim(), email: fields.email.trim() })
+        : await authService.login({ email: fields.email.trim(), password: fields.password });
       onAuthenticated(session);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Something went wrong. Please try again.');
