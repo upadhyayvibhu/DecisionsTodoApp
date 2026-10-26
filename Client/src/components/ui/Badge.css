@@ -12,6 +12,12 @@
 .badge--high { --badge-bg: rgb(239 68 68 / 0.18); --badge-fg: #f87171; }
 .badge--medium, .badge--pending { --badge-bg: rgb(245 158 11 / 0.18); --badge-fg: #fbbf24; }
 .badge--low, .badge--completed { --badge-bg: rgb(34 197 94 / 0.18); --badge-fg: #4ade80; }
+.badge--category-blue { --badge-bg: rgb(59 130 246 / 0.18); --badge-fg: #60a5fa; }
+.badge--category-violet { --badge-bg: rgb(139 92 246 / 0.2); --badge-fg: #a78bfa; }
+.badge--category-orange { --badge-bg: rgb(245 158 11 / 0.18); --badge-fg: #fbbf24; }
+.badge--category-teal { --badge-bg: rgb(20 184 166 / 0.18); --badge-fg: #2dd4bf; }
+.badge--category-pink { --badge-bg: rgb(236 72 153 / 0.18); --badge-fg: #f472b6; }
+.badge--category-indigo { --badge-bg: rgb(99 102 241 / 0.18); --badge-fg: #818cf8; }
 
 :root[data-theme='light'] .badge--work { --badge-bg: #e0edff; --badge-fg: #1d6fe0; }
 :root[data-theme='light'] .badge--personal { --badge-bg: #efe6ff; --badge-fg: #7c3aed; }
@@ -20,3 +26,9 @@
 :root[data-theme='light'] .badge--pending { --badge-bg: #fff0d6; --badge-fg: #b45309; }
 :root[data-theme='light'] .badge--low,
 :root[data-theme='light'] .badge--completed { --badge-bg: #dcf6e5; --badge-fg: #15803d; }
+:root[data-theme='light'] .badge--category-blue { --badge-bg: #e0edff; --badge-fg: #1d6fe0; }
+:root[data-theme='light'] .badge--category-violet { --badge-bg: #efe6ff; --badge-fg: #7c3aed; }
+:root[data-theme='light'] .badge--category-orange { --badge-bg: #fff0d6; --badge-fg: #b45309; }
+:root[data-theme='light'] .badge--category-teal { --badge-bg: #d9f7f2; --badge-fg: #0f766e; }
+:root[data-theme='light'] .badge--category-pink { --badge-bg: #fce7f3; --badge-fg: #be185d; }
+:root[data-theme='light'] .badge--category-indigo { --badge-bg: #e7e9ff; --badge-fg: #4338ca; }

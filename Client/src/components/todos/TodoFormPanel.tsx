@@ -14,6 +14,14 @@ interface TodoFormPanelProps {
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 500;
 
+const getToday = (): string => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const EMPTY_FORM: TodoFormValues = {
   title: '',
   description: '',
@@ -38,14 +46,18 @@ export default function TodoFormPanel({ todo, onSubmit, onClose, categories }: T
   const [showErrors, setShowErrors] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const today = getToday();
   const titleError = values.title.trim() ? null : 'Title is required.';
+  const dueDateError = values.dueDate && values.dueDate < today
+    ? 'Choose today or a future date.'
+    : null;
   const set = <K extends keyof TodoFormValues>(key: K, value: TodoFormValues[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setShowErrors(true);
-    if (titleError) return;
+    if (titleError || dueDateError) return;
 
     setIsSaving(true);
     try {
@@ -142,10 +154,14 @@ export default function TodoFormPanel({ todo, onSubmit, onClose, categories }: T
           <input
             id="dueDate"
             type="date"
-            className="input"
+            className={`input ${showErrors && dueDateError ? 'input--error' : ''}`}
+            min={today}
             value={values.dueDate}
             onChange={(e) => set('dueDate', e.target.value)}
           />
+          <span className="field__error" role={showErrors && dueDateError ? 'alert' : undefined}>
+            {showErrors ? dueDateError : 'Past dates cannot be selected.'}
+          </span>
         </div>
 
         <div className="field">
