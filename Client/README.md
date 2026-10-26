@@ -1,88 +1,49 @@
-# Client
+# Decisions Todo App Client
 
-React, TypeScript, and Vite frontend for the Decisions Todo App. The app runs
-entirely in the browser using seeded, in-memory todo data, so changes reset on
-refresh.
+The client is a React and TypeScript single-page application built with Vite. It provides account registration and login, todo management, categories, search, filters, dashboard statistics, and theme switching. It saves data through the ASP.NET Core API; it does not use in-memory sample data.
 
-## Development
+## Requirements
+
+- Node.js 20 or later
+- The API running at `http://localhost:5284` by default
+
+## Start the client
 
 ```powershell
 npm install
 npm run dev
-npm run build
-npm run lint
 ```
 
-## Vite configuration
+Open `http://localhost:5173` after Vite starts.
 
-Currently, two official plugins are available:
+## API URL
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Create `.env.local` to override the default API URL:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```env
+VITE_API_URL=http://localhost:5284
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+The selected API origin must also be included in the server's CORS configuration.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Commands
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+npm run dev      # Start the development server
+npm run build    # Type-check and create a production build
+npm run lint     # Run ESLint checks
+npm run preview  # Preview the production build
 ```
+
+## Key folders
+
+| Path | Purpose |
+| --- | --- |
+| `src/api` | API requests, session storage, and API contract types. |
+| `src/components` | Reusable UI, authentication, category, and todo components. |
+| `src/hooks` | Reusable state and browser-behavior logic. |
+| `src/mappers` | Converts API response objects into UI models. |
+| `src/pages` | Page-level components, including the dashboard. |
+| `src/types` | Client-specific TypeScript types. |
+
+For the complete project setup and API summary, see the [root README](../README.md) and [documentation](../DOCUMENTATION.md).
