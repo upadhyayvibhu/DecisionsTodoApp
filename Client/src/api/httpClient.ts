@@ -1,7 +1,11 @@
 import { getAccessToken, notifySessionExpired } from './session';
 import type { ProblemDetails } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5284';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_URL is missing. Add it to Client/.env.local for development.');
+}
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
