@@ -56,7 +56,7 @@ export default function TodoList({
           </div>
         ),
       },
-      { id: 'category', header: 'Category', cell: ({ row }) => <Badge value={row.original.category} /> },
+      { id: 'category', header: 'Category', cell: ({ row }) => <Badge value={row.original.category} categoryId={row.original.categoryId} /> },
       { id: 'priority', header: 'Priority', cell: ({ row }) => <Badge value={row.original.priority} /> },
       {
         id: 'status',
