@@ -157,8 +157,8 @@ export default function TodoFormPanel({ todo, onSubmit, onClose, categories }: T
           </label>
         </div>
 
-        <Button type="submit" fullWidth disabled={isSaving}>
-          {isSaving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Todo'}
+        <Button type="submit" fullWidth isLoading={isSaving} loadingLabel="Saving…">
+          {isEdit ? 'Save Changes' : 'Create Todo'}
         </Button>
         <Button variant="secondary" fullWidth onClick={onClose}>
           Cancel

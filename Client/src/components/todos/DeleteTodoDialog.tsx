@@ -26,7 +26,7 @@ export default function DeleteTodoDialog({ todo, isDeleting, onConfirm, onClose 
         <p id="delete-dialog-description">Are you sure you want to delete <strong>“{todo.title}”</strong>? This action cannot be undone.</p>
         <div className="dialog__actions">
           <Button variant="secondary" onClick={onClose} disabled={isDeleting}>Cancel</Button>
-          <Button className="btn--danger" onClick={onConfirm} disabled={isDeleting}>{isDeleting ? 'Deleting…' : 'Delete Todo'}</Button>
+          <Button className="btn--danger" onClick={onConfirm} isLoading={isDeleting} loadingLabel="Deleting…">Delete Todo</Button>
         </div>
       </section>
     </div>

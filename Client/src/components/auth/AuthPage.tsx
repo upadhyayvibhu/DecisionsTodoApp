@@ -109,7 +109,13 @@ export default function AuthPage({ theme, onToggleTheme, onAuthenticated }: Auth
               {isRegister && <small>Use 8+ characters with uppercase, lowercase, and a number.</small>}
             </label>
             {error && <p className="auth-error" role="alert">{error}</p>}
-            <button className="auth-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in'}<span aria-hidden="true">→</span></button>
+            <button className="auth-submit" type="submit" disabled={isSubmitting} aria-busy={isSubmitting || undefined}>
+              {isSubmitting ? (
+                <><span className="auth-submit__spinner" aria-hidden="true" /> Please wait…</>
+              ) : (
+                <>{isRegister ? 'Create account' : 'Sign in'}<span className="auth-submit__arrow" aria-hidden="true">→</span></>
+              )}
+            </button>
           </form>
           <p className="auth-switch">{isRegister ? 'Already have an account?' : 'New to TodoPro?'} <button type="button" onClick={() => switchMode(isRegister ? 'login' : 'register')}>{isRegister ? 'Sign in' : 'Create an account'}</button></p>
         </div>
